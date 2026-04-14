@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Sign up · Whisper</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" />
+</head>
+<body class="min-h-screen bg-base-200">
+  <div id="nav"></div>
+  <main class="max-w-md mx-auto p-4">
+    <div class="card bg-base-100 shadow">
+      <div class="card-body">
+        <h2 class="card-title">Create account</h2>
+        <form id="form" class="space-y-2">
+          <input name="username" placeholder="username (3-20, a-z 0-9 _)" class="input input-bordered w-full" required pattern="[a-z0-9_]{3,20}" />
+          <input name="email" type="email" placeholder="email" class="input input-bordered w-full" required />
+          <input name="password" type="password" placeholder="password (min 8)" class="input input-bordered w-full" required minlength="8" />
+          <input name="displayName" placeholder="display name (optional)" class="input input-bordered w-full" maxlength="50" />
+          <button class="btn btn-primary w-full">Sign up</button>
+        </form>
+        <div id="err" class="text-error text-sm min-h-[1.25rem]"></div>
+        <a href="/login.html" class="link link-hover text-center">Have an account? Log in</a>
+      </div>
+    </div>
+  </main>
+  <script src="/app.js"></script>
+  <script>
+    document.getElementById('form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const f = e.target;
+      const body = {
+        username: f.username.value.trim(),
+        email: f.email.value.trim(),
+        password: f.password.value,
+      };
+      if (f.displayName.value.trim()) body.displayName = f.displayName.value.trim();
+      try {
+        const res = await api('POST', '/api/auth/signup', { body });
+        setToken(res.token);
+        setUser(res.user);
+        location.href = '/inbox.html';
+      } catch (err) {
+        const details = err.data && err.data.details ? ' — ' + JSON.stringify(err.data.details) : '';
+        document.getElementById('err').textContent = err.message + details;
+      }
+    });
+  </script>
+</body>
+</html>

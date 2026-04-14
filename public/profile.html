@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Profile · Whisper</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" />
+</head>
+<body class="min-h-screen bg-base-200">
+  <div id="nav"></div>
+  <main class="max-w-2xl mx-auto p-4">
+    <h2 class="text-2xl font-bold mb-4">Edit profile</h2>
+    <form id="form" class="card bg-base-100 shadow">
+      <div class="card-body space-y-2">
+        <div>Username: <span id="uname" class="font-mono"></span> <span class="text-xs opacity-60">(immutable)</span></div>
+        <label class="form-control">
+          <span class="label-text">Display name</span>
+          <input name="displayName" class="input input-bordered" maxlength="50" />
+        </label>
+        <label class="form-control">
+          <span class="label-text">Bio (max 200)</span>
+          <textarea name="bio" class="textarea textarea-bordered" maxlength="200"></textarea>
+        </label>
+        <label class="form-control">
+          <span class="label-text">Avatar URL</span>
+          <input name="avatarUrl" type="url" class="input input-bordered" placeholder="https://..." />
+        </label>
+        <label class="form-control">
+          <span class="label-text">Tags (comma-separated, lowercase letters/digits/hyphens, 2-20 chars, up to 10)</span>
+          <input name="tags" placeholder="music, books, tech" class="input input-bordered" />
+        </label>
+        <label class="cursor-pointer label justify-start gap-2">
+          <input name="acceptingQuestions" type="checkbox" class="toggle" />
+          <span class="label-text">Accepting questions</span>
+        </label>
+        <button class="btn btn-primary">Save</button>
+        <div id="msg" class="text-sm min-h-[1.25rem]"></div>
+      </div>
+    </form>
+  </main>
+  <script src="/app.js"></script>
+  <script>
+    if (requireAuth()) {
+      const f = document.getElementById('form');
+      (async () => {
+        try {
+          const me = await api('GET', '/api/auth/me', { auth: true });
+          setUser(me);
+          renderNav();
+          document.getElementById('uname').textContent = '@' + me.username;
+          f.displayName.value = me.displayName || '';
+          f.bio.value = me.bio || '';
+          f.avatarUrl.value = me.avatarUrl || '';
+          f.tags.value = (me.tags || []).join(', ');
+          f.acceptingQuestions.checked = me.acceptingQuestions !== false;
+        } catch (err) {
+          if (err.status === 401) { clearAuth(); location.href = '/login.html'; }
+          else document.getElementById('msg').innerHTML = `<span class="text-error">${escapeHtml(err.message)}</span>`;
+        }
+      })();
+
+      f.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const body = {
+          displayName: f.displayName.value.trim() || undefined,
+          bio: f.bio.value,
+          avatarUrl: f.avatarUrl.value.trim(),
+          acceptingQuestions: f.acceptingQuestions.checked,
+          tags: f.tags.value.split(',').map((s) => s.trim().toLowerCase()).filter(Boolean),
+        };
+        try {
+          const user = await api('PATCH', '/api/users/me', { auth: true, body });
+          setUser(user);
+          renderNav();
+          document.getElementById('msg').innerHTML = '<span class="text-success">Saved!</span>';
+        } catch (err) {
+          const details = err.data && err.data.details ? ' — ' + JSON.stringify(err.data.details) : '';
+          document.getElementById('msg').innerHTML = `<span class="text-error">${escapeHtml(err.message + details)}</span>`;
+        }
+      });
+    }
+  </script>
+</body>
+</html>

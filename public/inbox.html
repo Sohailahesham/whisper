@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Inbox · Whisper</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" />
+</head>
+<body class="min-h-screen bg-base-200">
+  <div id="nav"></div>
+  <main class="max-w-3xl mx-auto p-4">
+    <h2 class="text-2xl font-bold mb-4">Inbox</h2>
+    <div role="tablist" class="tabs tabs-boxed mb-4">
+      <a role="tab" class="tab tab-active" data-status="">All</a>
+      <a role="tab" class="tab" data-status="pending">Pending</a>
+      <a role="tab" class="tab" data-status="answered">Answered</a>
+      <a role="tab" class="tab" data-status="ignored">Ignored</a>
+    </div>
+    <div id="list" class="space-y-3"></div>
+  </main>
+  <script src="/app.js"></script>
+  <script>
+    if (requireAuth()) {
+      let current = '';
+
+      function render(items) {
+        const list = document.getElementById('list');
+        if (!items.length) { list.innerHTML = '<div class="alert">No questions.</div>'; return; }
+        list.innerHTML = items.map((q) => `
+          <div class="card bg-base-100 shadow" data-id="${q.id}">
+            <div class="card-body">
+              <div class="italic opacity-80">"${escapeHtml(q.body)}"</div>
+              <div class="text-xs opacity-60">
+                ${new Date(q.createdAt).toLocaleString()} ·
+                <span class="badge badge-sm">${q.status}</span>
+                <span class="badge badge-sm badge-${q.visibility === 'public' ? 'success' : 'warning'}">${q.visibility}</span>
+              </div>
+              ${q.answer ? `<div class="mt-2">💬 ${escapeHtml(q.answer)}</div>` : ''}
+              ${q.status !== 'answered' ? `
+                <textarea class="textarea textarea-bordered answer-input mt-2" placeholder="your answer (max 1000)" maxlength="1000"></textarea>
+                <label class="cursor-pointer label justify-start gap-2">
+                  <span class="label-text">Public</span>
+                  <input type="checkbox" class="toggle toggle-sm public-toggle" checked />
+                </label>
+              ` : ''}
+              <div class="flex flex-wrap gap-2 mt-2">
+                ${q.status !== 'answered' ? '<button class="btn btn-primary btn-sm answer-btn">Answer</button>' : ''}
+                ${q.status === 'answered' ? `<button class="btn btn-outline btn-sm toggle-vis" data-vis="${q.visibility === 'public' ? 'private' : 'public'}">Make ${q.visibility === 'public' ? 'private' : 'public'}</button>` : ''}
+                ${q.status === 'pending' ? '<button class="btn btn-ghost btn-sm ignore-btn">Ignore</button>' : ''}
+                <button class="btn btn-error btn-sm delete-btn">Delete</button>
+              </div>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      async function load() {
+        try {
+          const res = await api('GET', `/api/questions/inbox${current ? `?status=${current}` : ''}`, { auth: true });
+          render(res.data);
+        } catch (err) {
+          if (err.status === 401) { clearAuth(); location.href = '/login.html'; return; }
+          toast(err.message, 'error');
+        }
+      }
+
+      document.getElementById('list').addEventListener('click', async (e) => {
+        const card = e.target.closest('[data-id]');
+        if (!card) return;
+        const id = card.dataset.id;
+        try {
+          if (e.target.classList.contains('answer-btn')) {
+            const answer = card.querySelector('.answer-input').value.trim();
+            if (!answer) return;
+            const visibility = card.querySelector('.public-toggle').checked ? 'public' : 'private';
+            await api('POST', `/api/questions/${id}/answer`, { auth: true, body: { answer, visibility } });
+            toast('Answered', 'success');
+            load();
+          } else if (e.target.classList.contains('ignore-btn')) {
+            await api('PATCH', `/api/questions/${id}`, { auth: true, body: { status: 'ignored' } });
+            load();
+          } else if (e.target.classList.contains('toggle-vis')) {
+            await api('PATCH', `/api/questions/${id}`, { auth: true, body: { visibility: e.target.dataset.vis } });
+            load();
+          } else if (e.target.classList.contains('delete-btn')) {
+            if (!confirm('Delete this question?')) return;
+            await api('DELETE', `/api/questions/${id}`, { auth: true });
+            load();
+          }
+        } catch (err) { toast(err.message, 'error'); }
+      });
+
+      document.querySelectorAll('.tab').forEach((t) => {
+        t.addEventListener('click', () => {
+          document.querySelectorAll('.tab').forEach((x) => x.classList.remove('tab-active'));
+          t.classList.add('tab-active');
+          current = t.dataset.status;
+          load();
+        });
+      });
+
+      load();
+    }
+  </script>
+</body>
+</html>

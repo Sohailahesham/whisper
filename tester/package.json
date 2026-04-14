@@ -1,0 +1,9 @@
+{
+  "name": "whisper-tester",
+  "version": "1.0.0",
+  "description": "Black-box HTTP tester for whisper",
+  "type": "module",
+  "scripts": {
+    "test": "node run.js"
+  }
+}

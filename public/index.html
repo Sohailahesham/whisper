@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Whisper</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" />
+</head>
+<body class="min-h-screen bg-base-200">
+  <div id="nav"></div>
+  <main class="max-w-3xl mx-auto p-4">
+    <div class="hero py-12">
+      <div class="hero-content text-center">
+        <div class="max-w-md w-full">
+          <h1 class="text-5xl font-bold">🤫 Whisper</h1>
+          <p class="py-6">Send anonymous questions. Answer honestly. Share your voice.</p>
+          <div class="flex gap-2 justify-center">
+            <a href="/signup.html" class="btn btn-primary">Get started</a>
+            <a href="/feed.html" class="btn btn-outline">Browse feed</a>
+          </div>
+          <div class="divider">or visit a user</div>
+          <div class="join w-full">
+            <input id="findUser" placeholder="username" class="input input-bordered join-item flex-1" />
+            <button id="findBtn" class="btn btn-secondary join-item">Go</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+  <script src="/app.js"></script>
+  <script>
+    function go() {
+      const u = document.getElementById('findUser').value.trim();
+      if (u) location.href = `/user.html?u=${encodeURIComponent(u)}`;
+    }
+    document.getElementById('findBtn').addEventListener('click', go);
+    document.getElementById('findUser').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') go();
+    });
+  </script>
+</body>
+</html>
