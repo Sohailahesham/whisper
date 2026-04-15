@@ -13,7 +13,7 @@ export async function authenticate(req, _res, next) {
       throw new HttpError(401, "Missing or malformed Authorization header");
     }
 
-    const token = header.slice(7);
+    const token = header.split(" ")[1];
     const payload = jwt.verify(token, process.env.JWT_SECRET);
 
     const user = await User.findById(payload.sub);

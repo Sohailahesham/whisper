@@ -62,9 +62,8 @@ export async function login(req, res, next) {
 }
 
 export async function me(req, res) {
-  // TODO:
+  // TODO:cl
   // Hint: authenticate middleware has already attached the user — just return it.
   // See: docs/API.md "GET /api/auth/me", tester/tests/auth.test.js
-  res.json({ user: req.user.toJSON() });
-  // throw new Error("not implemented");
+  res.json({ user: req.user });
 }
