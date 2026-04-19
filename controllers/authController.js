@@ -61,9 +61,14 @@ export async function login(req, res, next) {
   }
 }
 
-export async function me(req, res) {
+export async function me(req, res, next) {
   // TODO:cl
   // Hint: authenticate middleware has already attached the user — just return it.
   // See: docs/API.md "GET /api/auth/me", tester/tests/auth.test.js
-  res.json({ user: req.user });
+  try {
+    const user = await User.findById(req.user._id).select("-passwordHash");
+    return res.json(user);
+  } catch (error) {
+    next(error);
+  }
 }
