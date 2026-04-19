@@ -1,7 +1,10 @@
 {
   "deploy": {
-    "org": "mosaleh-dev",
-    "app": "whisper"
+    "org": "sohailahesham",
+    "app": "whisper",
+    "entrypoint": "server.js",
+    "build": {
+      "step": "npm install"
+    }
   }
 }
-
