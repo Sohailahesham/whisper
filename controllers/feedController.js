@@ -1,5 +1,5 @@
-import { Question } from '../models/Question.js';
-import { User } from '../models/User.js';
+import { Question } from "../models/Question.js";
+import { User } from "../models/User.js";
 
 export async function listGlobalFeed(req, res, next) {
   // TODO:
@@ -9,7 +9,7 @@ export async function listGlobalFeed(req, res, next) {
   // Populate recipient with: username displayName avatarUrl tags.
   // Sort answeredAt desc. Pagination envelope { data, page, limit, total, totalPages }.
   // See: docs/API.md "GET /api/feed", tester/tests/global-feed.test.js
-  
+
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
@@ -17,17 +17,14 @@ export async function listGlobalFeed(req, res, next) {
 
     const skip = (page - 1) * limit;
 
-    // base filter
     const filter = {
-      status: 'answered',
-      visibility: 'public',
+      status: "answered",
+      visibility: "public",
     };
 
-    // optional tag filter
     if (tag) {
-      const usersWithTag = await User.find({ tags: tag }).distinct('_id');
+      const usersWithTag = await User.find({ tags: tag }).distinct("_id");
 
-      // no users match → empty response
       if (!usersWithTag.length) {
         return res.json({
           data: [],
@@ -41,12 +38,10 @@ export async function listGlobalFeed(req, res, next) {
       filter.recipient = { $in: usersWithTag };
     }
 
-    // total count for pagination
     const total = await Question.countDocuments(filter);
 
-    // main query
     const data = await Question.find(filter)
-      .populate('recipient', 'username displayName avatarUrl tags')
+      .populate("recipient", "username displayName avatarUrl tags")
       .sort({ answeredAt: -1 })
       .skip(skip)
       .limit(limit);
@@ -61,6 +56,4 @@ export async function listGlobalFeed(req, res, next) {
   } catch (error) {
     next(error);
   }
-  
 }
-
