@@ -8,8 +8,8 @@
       "maxDuration": 60
     }
   },
-  "env": [
-    "MONGODB_URI",
-    "JWT_SECRET"
-  ]
+  "env": {
+    "MONGODB_URI": "mongodb+srv://sohailahesham456:Sohaila_23@cluster0.ke709.mongodb.net/whisper",
+    "JWT_SECRET": "dec8916ae46fa689b49e5210ce2d1497e4d95d5035c5b09da2cb47e4b53cbf9d828583133f1dbf0ffc103ecb0707a677bb00"
+  }
 }
