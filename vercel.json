@@ -1,0 +1,15 @@
+{
+  "buildCommand": "npm install",
+  "devCommand": "node --watch server.js",
+  "framework": null,
+  "functions": {
+    "server.js": {
+      "memory": 1024,
+      "maxDuration": 60
+    }
+  },
+  "env": [
+    "MONGODB_URI",
+    "JWT_SECRET"
+  ]
+}

@@ -36,3 +36,6 @@ const PORT = process.env.PORT || 3000;
 
 await connectDB();
 app.listen(PORT, () => console.log(`whisper listening on ${PORT}`));
+
+
+export default app;
