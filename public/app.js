@@ -31,21 +31,13 @@ async function api(method, path, { body, auth = false } = {}) {
     body: body ? JSON.stringify(body) : undefined,
   });
   const text = await res.text();
-  let data = null;
-  if (text) {
-    try {
-      data = JSON.parse(text);
-    } catch {
-      data = null;
-    }
-  }
+  const data = text ? JSON.parse(text) : null;
   if (!res.ok) {
     const err = new Error(
-      (data && data.error?.message) || text || `HTTP ${res.status}`,
+      (data && data.error?.message) || `HTTP ${res.status}`,
     );
     err.status = res.status;
     err.data = data;
-    err.raw = text;
     throw err;
   }
   return data;
